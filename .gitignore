@@ -1,0 +1,28 @@
+# CSE 325 - Files to NEVER commit to GitHub
+# These files stay local only for learning and Canvas submissions
+
+# Learning notes and documentation
+*-Notes.txt
+*-Tutorial.txt
+*-Submission.txt
+*-progress.md
+
+# Instruction files
+INSTRUCTIONS-*.md
+*WORKFLOW*.md
+SIMPLIFY-*.md
+MASTER-*.md
+
+# Screenshots and media
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+
+# Temporary files
+*.tmp
+*.temp
+
+# macOS system files
+.DS_Store
