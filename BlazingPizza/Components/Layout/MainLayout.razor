@@ -1,0 +1,30 @@
+﻿@inherits LayoutComponentBase
+
+<div class="top-bar">
+    <img class="logo" src="img/logo.svg" alt="Blazing Pizza" />
+
+    <nav class="navbar">
+        <a href="" class="nav-tab">
+            <img src="img/pizza-slice.svg" alt="pizza slice" />
+            <div>Get Pizza</div>
+        </a>
+        <a href="myorders" class="nav-tab">
+            <img src="img/bike.svg" alt="bike" />
+            <div>My Orders</div>
+        </a>
+    </nav>
+</div>
+
+<div class="content">
+    @Body
+</div>
+
+<footer>
+    &copy; Blazing Pizza @DateTime.UtcNow.Year - Franck Tshibala, United States
+</footer>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>

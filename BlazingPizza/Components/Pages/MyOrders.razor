@@ -1,0 +1,58 @@
+@page "/myorders"
+@rendermode InteractiveServer
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Blazing Pizza - My Orders</PageTitle>
+
+<div class="main">
+    <div class="order-list">
+        <h2>My Orders</h2>
+
+        @if (ordersWithStatus == null)
+        {
+            <div class="loading-indicator">Loading...</div>
+        }
+        else if (ordersWithStatus.Count == 0)
+        {
+            <h2>No orders placed</h2>
+            <a class="btn btn-success" href="/">Order some pizza</a>
+        }
+        else
+        {
+            <div class="list-group">
+                @foreach (var order in ordersWithStatus)
+                {
+                    <div class="list-group-item">
+                        <div class="col">
+                            <h5>@order.Order.CreatedTime.ToLongDateString()</h5>
+                            Items:
+                            <strong>@order.Order.Pizzas.Count</strong>;
+                            Total price:
+                            <strong>@order.Order.GetFormattedTotalPrice()</strong>
+                        </div>
+                        <div class="col">
+                            Status: <strong>@order.StatusText</strong>
+                        </div>
+                        <div class="col flex-grow-0">
+                            <a href="myorders/@order.Order.OrderId" class="btn btn-success">
+                                Track &gt;
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    List<OrderWithStatus>? ordersWithStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // For demo purposes, we'll just show the most recent order
+        // In a real app, you'd fetch all orders for the current user
+        ordersWithStatus = new List<OrderWithStatus>();
+    }
+}

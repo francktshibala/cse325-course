@@ -1,0 +1,87 @@
+@inject PizzaStoreContext Db
+@using Microsoft.EntityFrameworkCore
+@using BlazingPizza.Data
+
+<div class="dialog-container">
+    <div class="dialog">
+        <div class="dialog-title">
+            <h2>@Pizza.Special?.Name</h2>
+            @Pizza.Special?.Description
+        </div>
+        <form class="dialog-body">
+            <div>
+                <label>Size:</label>
+                <input type="range" min="@Pizza.MinimumSize" max="@Pizza.MaximumSize" step="1" @bind="Pizza.Size" @bind:event="oninput" />
+                <span class="size-label">
+                    @Pizza.Size" (@(Pizza.Size < 12 ? "Small" : Pizza.Size < 14 ? "Medium" : "Large"))
+                </span>
+            </div>
+            <div>
+                <label>Extra Toppings:</label>
+                @if (toppings == null)
+                {
+                    <p>Loading toppings...</p>
+                }
+                else if (toppings.Count == 0)
+                {
+                    <p>No toppings available</p>
+                }
+                else
+                {
+                    <div class="toppings">
+                        @foreach (var topping in toppings)
+                        {
+                            <div class="topping">
+                                <input type="checkbox" id="topping_@topping.Id"
+                                       checked="@Pizza.Toppings.Any(pt => pt.ToppingId == topping.Id)"
+                                       @onchange="@(e => OnToppingChanged(topping, (bool)e.Value!))" />
+                                <label for="topping_@topping.Id">@topping.Name - $@topping.Price.ToString("0.00")</label>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </form>
+        <div class="dialog-buttons">
+            <button class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+            <button class="btn btn-success" @onclick="OnConfirm">Order ></button>
+        </div>
+        <div class="price-info">
+            Total: @Pizza.GetFormattedTotalPrice()
+        </div>
+    </div>
+</div>
+
+@code {
+    List<Topping>? toppings;
+
+    [Parameter]
+    public Pizza Pizza { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirm { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        toppings = await Db.Toppings.ToListAsync();
+        toppings = toppings.OrderBy(t => t.Name).ToList();
+    }
+
+    void OnToppingChanged(Topping topping, bool added)
+    {
+        if (added)
+        {
+            if (!Pizza.Toppings.Any(pt => pt.ToppingId == topping.Id))
+            {
+                Pizza.Toppings.Add(new PizzaTopping { Topping = topping, ToppingId = topping.Id, Pizza = Pizza });
+            }
+        }
+        else
+        {
+            Pizza.Toppings.RemoveAll(pt => pt.ToppingId == topping.Id);
+        }
+    }
+}

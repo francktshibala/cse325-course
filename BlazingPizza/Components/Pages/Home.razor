@@ -1,0 +1,75 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject PizzaStoreContext Db
+@inject NavigationManager NavigationManager
+@inject OrderState OrderState
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Blazing Pizza</PageTitle>
+
+<div class="main">
+    <h1>Blazing Pizzas</h1>
+    <ul class="pizza-cards">
+        @if (specials != null)
+        {
+            @foreach (var special in specials)
+            {
+                <li @onclick="@(() => OrderState.ShowConfigurePizzaDialog(special))" style="background-image: url('@special.ImageUrl')">
+                    <div class="pizza-info">
+                        <span class="title">@special.Name</span>
+                        @special.Description
+                        <span class="price">@special.GetFormattedBasePrice()</span>
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</div>
+
+<div class="sidebar">
+    @if (OrderState.Order.Pizzas.Any())
+    {
+        <div class="order-contents">
+            <h2>Your order</h2>
+
+            @foreach (var pizza in OrderState.Order.Pizzas)
+            {
+                <ConfiguredPizzaItem Pizza="pizza" OnRemove="@(() => OrderState.RemoveConfiguredPizza(pizza))" />
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-cart">Choose a pizza<br>to get started</div>
+    }
+
+    <div class="order-total @(OrderState.Order.Pizzas.Any() ? "" : "hidden")">
+        Total:
+        <span class="total-price">@OrderState.Order.GetFormattedTotalPrice()</span>
+        <button class="btn btn-warning" disabled="@(!OrderState.Order.Pizzas.Any())" @onclick="PlaceOrder">
+            Order >
+        </button>
+    </div>
+</div>
+
+@if (OrderState.ShowingConfigureDialog)
+{
+    <ConfigurePizzaDialog Pizza="OrderState.ConfiguringPizza!"
+                          OnCancel="OrderState.CancelConfigurePizzaDialog"
+                          OnConfirm="OrderState.ConfirmConfigurePizzaDialog" />
+}
+
+@code {
+    List<PizzaSpecial>? specials;
+
+    protected override async Task OnInitializedAsync()
+    {
+        specials = await Db.Specials.ToListAsync();
+        specials = specials.OrderByDescending(s => s.BasePrice).ToList();
+    }
+
+    void PlaceOrder()
+    {
+        NavigationManager.NavigateTo("checkout");
+    }
+}

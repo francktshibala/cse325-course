@@ -1,0 +1,84 @@
+@page "/myorders/{orderId:int}"
+@rendermode InteractiveServer
+@inject PizzaStoreContext Db
+@using BlazingPizza.Data
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Blazing Pizza - Order Details</PageTitle>
+
+<div class="main">
+    @if (orderWithStatus == null)
+    {
+        <div class="loading-indicator">Loading...</div>
+    }
+    else
+    {
+        <div class="track-order">
+            <div class="track-order-title">
+                <h2>
+                    Order placed @orderWithStatus.Order.CreatedTime.ToLongDateString()
+                </h2>
+                <p class="ml-auto mb-0">
+                    Status: <strong>@orderWithStatus.StatusText</strong>
+                </p>
+            </div>
+            <div class="track-order-body">
+                <div class="track-order-details">
+                    @foreach (var pizza in orderWithStatus.Order.Pizzas)
+                    {
+                        <p>
+                            <strong>
+                                @(pizza.Size)"
+                                @pizza.Special?.Name
+                                (@pizza.GetFormattedTotalPrice())
+                            </strong>
+                        </p>
+                        @if (pizza.Toppings.Any())
+                        {
+                            <div class="pizza-toppings">
+                                Toppings: @string.Join(", ", pizza.Toppings.Select(t => t.Topping?.Name))
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="track-order-totals">
+                    <p>
+                        <strong>
+                            Total price:
+                            @orderWithStatus.Order.GetFormattedTotalPrice()
+                        </strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int OrderId { get; set; }
+
+    OrderWithStatus? orderWithStatus;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            var order = await Db.Orders
+                .Where(o => o.OrderId == OrderId)
+                .Include(o => o.DeliveryAddress)
+                .Include(o => o.Pizzas).ThenInclude(p => p.Special)
+                .Include(o => o.Pizzas).ThenInclude(p => p.Toppings).ThenInclude(t => t.Topping)
+                .FirstOrDefaultAsync();
+
+            if (order != null)
+            {
+                orderWithStatus = OrderWithStatus.FromOrder(order);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading order: {ex.Message}");
+        }
+    }
+}

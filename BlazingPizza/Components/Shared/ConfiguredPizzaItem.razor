@@ -1,0 +1,22 @@
+<div class="cart-item">
+    <div class="title">@(Pizza.Size)" @Pizza.Special?.Name</div>
+    <div class="item-price">
+        @Pizza.GetFormattedTotalPrice()
+    </div>
+    <button type="button" class="delete-item" @onclick="OnRemove">x</button>
+
+    @if (Pizza.Toppings.Any())
+    {
+        <div class="toppings-list">
+            Toppings: @string.Join(", ", Pizza.Toppings.Select(t => t.Topping?.Name))
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Pizza Pizza { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+}
